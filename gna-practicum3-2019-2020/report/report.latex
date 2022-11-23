@@ -1,0 +1,147 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.54cm]{geometry}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+\setlength\parindent{0em}
+
+
+\title{Verslag Practicum 3\\ 
+\vspace{.3cm}\large{Gegevensstructuren en Algoritmen}}
+\author{Syan Delbart}
+\date{29 Mei 2020}
+
+
+\begin{document}
+
+
+\maketitle
+\thispagestyle{empty}
+ \newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Grafe \& kortste pad}
+
+\begin{center}
+        \begin{tabular}{| c | c | c |} 
+        \hline
+        \multicolumn{3}{|c|}{Voorstelling afbeelding in kleurcoördinaten} \\
+        \hline
+        (7,0,0) & (0,1,0) & (0,0,1) \\
+        \hline
+        (2,0,0) & (0,8,0) & (0,0,5) \\
+        \hline
+        (1,0,0) & (0,1,0) & (0,0,8) \\
+        \hline
+        \end{tabular}
+\end{center}
+
+Hieronder de grafe van bovenstaande matrix in kleurcoördinaten. Voor de gewichten te berekenen wordt theoretisch gezien de formule $\sqrt{(r_{x} - r_{y})^2 + (g_{x} - g_{y})^2 + (b_{x} - b_{y})^2}$ gebruikt. In het practicum wordt echter de vierkantswortel achterwege gehouden, aangezien dit elk gewicht slechts scaleert, en kan zorgen voor complicaties door het creëeren van decimale cijfers.
+
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+                    thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (1) {$7^2$};
+  \node[main node] (2) [right of=1] {$1^2$};
+  \node[main node] (3) [right of=2] {$1^2$};
+  \node[main node] (4) [below of=1] {$2^2$};
+  \node[main node] (5) [below of=2] {$8^2$};
+  \node[main node] (6) [below of=3] {$5^2$};
+  \node[main node] (7) [below of=4] {$1^2$};
+  \node[main node] (8) [below of=5] {$1^2$};
+  \node[main node] (9) [below of=6] {$8^2$};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge node [left] {+4} (4)
+    (4) edge node [right] {+1} (8)
+    (8) edge node [top] {+64} (9)
+    
+\end{tikzpicture}
+\end{center}
+
+Het kortste pad is met pijlen aangeduid. Het berekenen van het totaal gewicht levert een eindsom uit van 69 $(2^2 + 1^2 + 8^2)$. Het eerste gewicht wordt niet meegeteld omdat $7^2$ de beginknoop is, en er dus geen kost is om naar het initiële punt te reizen.
+
+\section{Andere afstandsfunctie gebruiken}
+    Door het gebruiken van de afstandsformule $\sqrt{(r_{x} - r_{y})^2 + (g_{x} - g_{y})^2}$ 
+    in plaats van\newline $\sqrt{(r_{x} - r_{y})^2 + (g_{x} - g_{y})^2 + (b_{x} - b_{y})^2}$ wordt de blauwe kleurcomponent achterwege gelaten. Het effect hiervan zal vooral zichtbaar zijn op afbeeldingen met een blauwe omgeving zoals water en lucht. De uitvoeringstijd blijft relatief hetzelfde, zolang de groene en rode kleurcomponenten aanwezig zijn in de kleur. Dit zal vaak ook zo zijn aangezien een lichtere vorm van blauw groene en/of rode kleurcomponenten nodig heeft. Wanneer het gaat over een pure blauwe kleur (blauw \& donkerblauw), zal het gewicht minder nauwkeurig berekent worden, en kan dit effecten hebben op de uitvoeringstijd. Wat vooral opvalt is dat blauwe figuren minder nauwkeurig zullen worden gecombineerd, waardoor de lijn tussen 2 gecombineerde afbeeldingen harder zal opvallen.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10cm]{a.png}
+        \caption{Afbeelding met blauwe kleurcomponent}
+        \label{fig:1}
+    \end{figure}   
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10cm]{b.png}
+        \caption{Afbeelding zonder blauwe kleurcomponent}
+        \label{fig:1}
+    \end{figure}
+
+
+\section{Verschil tussen een vierkante afbeelding en een strook}
+    \subsection{Algemeen verschil}
+    Een strook zal veel sneller zijn, aangezien deze voor veel minder buren de kost moet berekenen. Aangezien het algoritme links van boven begint, en systematisch naar de uiterst rechtse onderkant zal gaan, vertaalt dat zich op een horizontale strook als van links naar rechts. Er zal telkens maar één buur zijn, namelijk de rechtse. De prioriteitsrij zal steeds maar 1 element groot zijn. 
+    \subsection{Tijdscomplexiteit}
+        Hieronder een overzicht van de tijdscomplexiteit voor een strook van N x 1. Een strook van 1 x N komt op hetzelfde neer, op een aantal operaties na. BO staat voor basis operaties, hiermee worden eenvoudige operaties zoals "$x>0$" bedoelt. Vaak wordt er bij het berekenen van de tijdscomplexiteit enkel rekening gehouden met complexere functies (.poll(), .peek(), .add(),...) en de array accesses.  De kolom met basis operaties houdt ook rekening met deze complexere functies.
+        
+        \begin{center}
+                \begin{tabular}{| c | c | c |} 
+                \hline
+                \multicolumn{3}{|c|}{Tijdscomplexiteit stitch (N x 1)} \\
+                \hline
+                Functie/lijn & Met BO & Zonder BO \\
+                \hline
+                Seam & 27N & 16N \\
+                \hline
+                Mask init. & 1 & / \\
+                \hline
+                Mask set empty. & N & N \\
+                \hline
+                Set seam line & 3N & 3N \\
+                \hline
+                Floodfill & 3N + 2 & 2N \\
+                \hline
+                Return & 1 & / \\
+                \hline
+                Totaal & 34N + 5 & 21N \\
+                \hline
+                
+                
+                \end{tabular}
+        \end{center}
+
+        De reden dat een strook veel efficiënter zal opgelost worden dan een vierkant is omdat er geen rekening moet gehouden worden met oftewel kolommen of rijen. Buren kunnen maar in één richting gevonden worden, en de prioriteitsrij zal telkens maar één element moeten sorteren. Wanneer er meerdere rijen en kolommen zijn zal de prioriteitsrij veel meer elementen moeten sorteren, en zullen er meer buren zijn
+
+\section{Voorkomen van teruglopen seam}
+      \subsection{getneighbours() functie aanpassen}
+        In deze functie worden de buren van een bepaalde pixel teruggestuurd. De actuele implementatie maakt een collectie van elke buur dat aangrenst aan de pixel waar deze functie op word uitgevoerd (zowel horizontaal, verticaal als diagonaal), behalve de buur waar deze functie eerder werd op uitgevoerd. Een mogelijke aanpassing kan dus zijn om enkel de buren rechts, onder en rechtsonder van de pixel terug te sturen.
+      \subsection{\italic{seam()} functie aanpassen} 
+        Een mogelijkheid is om de implementatie aan te passen van seam, zodat deze telkens de locatie van de huidige pixel opslaat. Vervolgens kan ervoor gezorgd worden dat enkel een pixel met een hoger x of y-coordinaat kan gebruikt worden.
+      \subsection{\italic{Gewichten} aanpassen} 
+        Een andere mogelijkheid is om de gewichten van de pixels zelf aan te passen. Het is mogelijk om pixels zodanig te benadelen dat deze nooit van voor in de prioriteitsrij zullen komen. Praktisch is dit echter niet zo overzichtelijk, aangezien de gewichten normaal gezien geen rekening houden met de coordinaten van de pixels.
+
+
+\section{Gevolg zoeken langste pad in plaats van kortste pad}
+    Hoe een afbeelding eruit zou zien na het zoeken van het langste pad in plaats van het kortste pad hangt deels af van de implementatie. Over het algemeen zal dit als gevolg hebben dat de seam over ongeveer heel de afbeelding zal verspreid zijn, waardoor de grens tussen de 2 afbeeldingen zeer zichtbaar is (als het nog een grens genoemd kan worden). Het kortste pad zorgt ervoor dat er zo min mogelijk word uitgebreid langs de kanten, maar het langste pad zal elke "afleiding" van het doel erbij nemen. Uiteindelijk zal het totaal gewicht ongeveer gelijk zijn aan de som van het gewicht van elke node (wat dus ook het grootst mogelijke gewicht is).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10cm]{c.png}
+        \caption{Afbeelding met zichtbare ruis door langste pad in plaats van kortste pad als seam}
+        \label{fig:1}
+    \end{figure}
+
+    
+\end{document}
